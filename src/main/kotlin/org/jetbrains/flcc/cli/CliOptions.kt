@@ -1,5 +1,6 @@
 package org.jetbrains.flcc.cli
 
+import org.jetbrains.flcc.lang.Language
 import java.lang.IllegalArgumentException
 import java.nio.file.Path
 import kotlin.reflect.full.memberProperties
@@ -10,18 +11,22 @@ data class CliOptions(
     val interfaceName: String?,
     val methodsWhitelist: List<String>,
     val methodsBlacklist: List<String>,
-    val accessModifier: String,
+    val accessModifier: String?,
     val inputPath: Path,
-    val outputPath: Path?
+    val outputPath: Path?,
+    val inputLanguage: Language?,
+    val outputLanguage: Language?
 ) {
     class Builder {
-        private var className: ClassName = ClassName()
-        private var interfaceName: InterfaceName = InterfaceName()
-        private var methodsWhitelist: Whitelist = Whitelist()
-        private var methodsBlacklist: Blacklist = Blacklist()
-        private var accessModifier: AccessModifier = AccessModifier()
-        private var inputPath: InputPath = InputPath()
-        private var outputPath: OutputPath = OutputPath()
+        private val className: StringFlag = StringFlag()
+        private val interfaceName: StringFlag = StringFlag()
+        private val methodsWhitelist: ListFlag = ListFlag()
+        private val methodsBlacklist: ListFlag = ListFlag()
+        private val accessModifier: StringFlag = StringFlag()
+        private val inputPath: PathFlag = PathFlag()
+        private val outputPath: PathFlag = PathFlag()
+        private val inputLanguage: LanguageFlag = LanguageFlag()
+        private val outputLanguage: LanguageFlag = LanguageFlag()
 
         fun set(name: String, value: String): Builder {
             for (prop in Builder::class.memberProperties) {
@@ -43,43 +48,36 @@ data class CliOptions(
                 interfaceName.value,
                 methodsWhitelist.value,
                 methodsBlacklist.value,
-                accessModifier.value,
+                accessModifier.value!!,
                 inputPath.value ?: throw IllegalStateException("Property 'inputPath' must be initialized."),
-                outputPath.value
+                outputPath.value,
+                inputLanguage.value,
+                outputLanguage.value
             )
         }
 
         private sealed class Flag<T>(var value: T) {
-            val name: String = this::class::simpleName.name
             abstract fun setValue(stringValue: String)
         }
 
-        private class ClassName : Flag<String?>(null) {
+        private class StringFlag : Flag<String?>(null) {
             override fun setValue(stringValue: String) = run { value = stringValue }
         }
 
-        private class InterfaceName : Flag<String?>(null) {
-            override fun setValue(stringValue: String) = run { value = stringValue }
-        }
-
-        private class Whitelist: Flag<List<String>>(emptyList()) {
+        private class ListFlag : Flag<List<String>>(emptyList()) {
             override fun setValue(stringValue: String) = run { value = stringValue.toListOfString() }
         }
 
-        private class Blacklist: Flag<List<String>>(emptyList()) {
-            override fun setValue(stringValue: String) = run { value = stringValue.toListOfString() }
-        }
-
-        private class AccessModifier: Flag<String>("public") {
-            override fun setValue(stringValue: String) = run { value = stringValue }
-        }
-
-        private class InputPath: Flag<Path?>(null) {
+        private class PathFlag : Flag<Path?>(null) {
             override fun setValue(stringValue: String) = run { value = Path.of(stringValue) }
         }
 
-        private class OutputPath: Flag<Path?>(null) {
-            override fun setValue(stringValue: String) = run { value = Path.of(stringValue) }
+        private class LanguageFlag : Flag<Language?>(null) {
+            override fun setValue(stringValue: String) {
+                value = requireNotNull(Language.forName(stringValue)) {
+                    "Cannot find a language by name '$stringValue'."
+                }
+            }
         }
 
         companion object {

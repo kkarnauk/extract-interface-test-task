@@ -13,6 +13,7 @@ import java.util.*
 object JavaLanguage : Language() {
     private val parser = JavaParser()
 
+    override val name: String = "Java"
     override val extension: String = "java"
 
     override fun extractMethods(
