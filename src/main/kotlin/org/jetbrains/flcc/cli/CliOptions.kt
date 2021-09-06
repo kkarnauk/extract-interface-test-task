@@ -1,22 +1,28 @@
 package org.jetbrains.flcc.cli
 
+import org.jetbrains.flcc.lang.JavaLanguage
 import org.jetbrains.flcc.lang.Language
-import java.lang.IllegalArgumentException
 import java.nio.file.Path
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
 data class CliOptions(
-    val className: String?,
-    val interfaceName: String?,
-    val methodsWhitelist: List<String>,
-    val methodsBlacklist: List<String>,
-    val accessModifier: String?,
-    val inputPath: Path,
-    val outputPath: Path?,
-    val inputLanguage: Language?,
-    val outputLanguage: Language?
+    val input: IOOptions,
+    val output: IOOptions,
+    val requirements: MethodsRequirements
 ) {
+    data class IOOptions(
+        val name: String,
+        val path: Path,
+        val language: Language
+    )
+
+    data class MethodsRequirements(
+        val whitelist: List<String>?,
+        val blacklist: List<String>?,
+        val accessModifier: String
+    )
+
     class Builder {
         private val className: StringFlag = StringFlag()
         private val interfaceName: StringFlag = StringFlag()
@@ -42,17 +48,29 @@ data class CliOptions(
         }
 
         fun build(): CliOptions {
-
+            val inputLanguage = inputLanguage.value ?: defaultLanguage()
+            val outputLanguage = outputLanguage.value ?: defaultLanguage()
+            val inputPath = inputPath.value ?: throw IllegalStateException("Property 'inputPath' must be initialized.")
+            val className = className.value ?: defaultClassName(inputPath, inputLanguage)
+            val interfaceName = interfaceName.value ?: defaultInterfaceName(className)
+            val outputPath = outputPath.value ?: defaultOutputPath(inputPath, interfaceName, outputLanguage)
+            val accessModifier = accessModifier.value ?: defaultAccessModifier()
             return CliOptions(
-                className.value,
-                interfaceName.value,
-                methodsWhitelist.value,
-                methodsBlacklist.value,
-                accessModifier.value!!,
-                inputPath.value ?: throw IllegalStateException("Property 'inputPath' must be initialized."),
-                outputPath.value,
-                inputLanguage.value,
-                outputLanguage.value
+                IOOptions(
+                    className,
+                    inputPath,
+                    inputLanguage
+                ),
+                IOOptions(
+                    interfaceName,
+                    outputPath,
+                    outputLanguage
+                ),
+                MethodsRequirements(
+                    methodsWhitelist.value,
+                    methodsBlacklist.value,
+                    accessModifier
+                )
             )
         }
 
@@ -64,12 +82,12 @@ data class CliOptions(
             override fun setValue(stringValue: String) = run { value = stringValue }
         }
 
-        private class ListFlag : Flag<List<String>>(emptyList()) {
+        private class ListFlag : Flag<List<String>?>(null) {
             override fun setValue(stringValue: String) = run { value = stringValue.toListOfString() }
         }
 
         private class PathFlag : Flag<Path?>(null) {
-            override fun setValue(stringValue: String) = run { value = Path.of(stringValue) }
+            override fun setValue(stringValue: String) = run { value = Path.of(stringValue).toAbsolutePath() }
         }
 
         private class LanguageFlag : Flag<Language?>(null) {
@@ -85,6 +103,20 @@ data class CliOptions(
                 check(first() == '[') { "Incorrect format for list." }
                 check(last() == ']') { "Incorrect format for list." }
                 return substring(1, length - 1).split(',').onEach { it.trim() }
+            }
+
+            private fun defaultLanguage(): Language = JavaLanguage
+
+            private fun defaultClassName(inputPath: Path, inputLanguage: Language): String =
+                inputLanguage.primaryClassNameForFile(inputPath.toFile())
+
+            private fun defaultInterfaceName(className: String): String = className + "Interface"
+
+            private fun defaultAccessModifier(): String = "public"
+
+            private fun defaultOutputPath(inputPath: Path, interfaceName: String, outputLanguage: Language): Path {
+                val fileName = outputLanguage.nameForFile(interfaceName)
+                return requireNotNull(inputPath.parent) { "'inputPath' must be a file" }.resolve(fileName)
             }
         }
     }
