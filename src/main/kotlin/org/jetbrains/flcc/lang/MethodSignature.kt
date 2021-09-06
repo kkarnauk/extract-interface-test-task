@@ -10,3 +10,5 @@ data class MethodSignature(
 
     data class Parameter(val name: String, val type: Type)
 }
+
+typealias MethodFilter = (MethodSignature) -> Boolean

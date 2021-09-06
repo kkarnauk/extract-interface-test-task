@@ -1,6 +1,5 @@
 package org.jetbrains.flcc.lang
 
-import com.github.javaparser.ast.body.MethodDeclaration
 import java.io.File
 
 sealed class Language {
@@ -10,7 +9,7 @@ sealed class Language {
     abstract fun extractMethods(
         code: String,
         className: String,
-        methodFilter: (MethodDeclaration) -> Boolean
+        methodFilter: MethodFilter
     ): List<MethodSignature>
 
     abstract fun constructInterface(

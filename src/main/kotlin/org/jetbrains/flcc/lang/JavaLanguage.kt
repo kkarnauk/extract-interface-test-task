@@ -19,7 +19,7 @@ object JavaLanguage : Language() {
     override fun extractMethods(
         code: String,
         className: String,
-        methodFilter: (MethodDeclaration) -> Boolean
+        methodFilter: (MethodSignature) -> Boolean
     ): List<MethodSignature> {
         val ast = parser.parse(code).result.unwrap()
         requireNotNull(ast) { "Cannot parse given Java file." }
@@ -27,7 +27,7 @@ object JavaLanguage : Language() {
         val type = findType(ast.types, className)
         requireNotNull(type) { "Cannot find given class name." }
 
-        return type.methods.filter(methodFilter).map { it.toMethodSignature() }
+        return type.methods.map { it.toMethodSignature() }.filter(methodFilter)
     }
 
     private fun findType(roots: List<TypeDeclaration<*>>, typeName: String): TypeDeclaration<*>? {
