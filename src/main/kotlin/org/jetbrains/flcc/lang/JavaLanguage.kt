@@ -1,6 +1,7 @@
 package org.jetbrains.flcc.lang
 
 import com.github.javaparser.JavaParser
+import com.github.javaparser.ast.AccessSpecifier
 import com.github.javaparser.ast.NodeList
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration
 import com.github.javaparser.ast.body.MethodDeclaration
@@ -26,6 +27,7 @@ object JavaLanguage : Language() {
 
         val type = findType(ast.types, className)
         requireNotNull(type) { "Cannot find given class name." }
+        require(type is ClassOrInterfaceDeclaration && !type.isInterface) { "Given object must be a class." }
 
         return type.methods.map { it.toMethodSignature() }.filter(methodFilter)
     }
@@ -61,6 +63,9 @@ object JavaLanguage : Language() {
     private fun MethodSignature.Type.toType(): Type =
         checkNotNull(parser.parseType(name).result.unwrap())
 
+    private fun AccessSpecifier.toAccessModifier(): MethodSignature.AccessModifier =
+        MethodSignature.AccessModifier(name)
+
     private fun Parameter.toCommonParameter(): MethodSignature.Parameter =
         MethodSignature.Parameter(nameAsString, type.toCommonType())
 
@@ -72,7 +77,8 @@ object JavaLanguage : Language() {
     private fun MethodDeclaration.toMethodSignature(): MethodSignature = MethodSignature(
         nameAsString,
         type.toCommonType(),
-        parameters.map { it.toCommonParameter() }
+        parameters.map { it.toCommonParameter() },
+        accessSpecifier.toAccessModifier(),
     )
 
     private fun MethodSignature.toInterfaceMethodDeclaration(): MethodDeclaration = MethodDeclaration().also {
