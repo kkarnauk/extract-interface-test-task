@@ -1,8 +1,8 @@
 package org.jetbrains.flcc.cli
 
 object ArgsParser {
-    fun parse(args: List<String>): CliOptions {
-        val builder = CliOptions.Builder()
+    fun parse(args: List<String>): Options {
+        val builder = Options.Builder()
         for (i in args.indices step 2) {
             require(args[i].isFlag()) {
                 "Incorrect arguments format: every second argument must be a flag name."

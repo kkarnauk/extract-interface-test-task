@@ -6,7 +6,7 @@ import java.nio.file.Path
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-data class CliOptions(
+data class Options(
     val input: IOOptions,
     val output: IOOptions,
     val requirements: MethodsRequirements
@@ -47,7 +47,7 @@ data class CliOptions(
             throw IllegalArgumentException("No property with name '$name'.")
         }
 
-        fun build(): CliOptions {
+        fun build(): Options {
             val inputLanguage = inputLanguage.value ?: defaultLanguage()
             val outputLanguage = outputLanguage.value ?: defaultLanguage()
             val inputPath = inputPath.value ?: throw IllegalStateException("Property 'inputPath' must be initialized.")
@@ -55,7 +55,7 @@ data class CliOptions(
             val interfaceName = interfaceName.value ?: defaultInterfaceName(className)
             val outputPath = outputPath.value ?: defaultOutputPath(inputPath, interfaceName, outputLanguage)
             val accessModifier = accessModifier.value ?: defaultAccessModifier()
-            return CliOptions(
+            return Options(
                 IOOptions(
                     className,
                     inputPath,

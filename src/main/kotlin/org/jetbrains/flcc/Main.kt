@@ -1,7 +1,7 @@
 package org.jetbrains.flcc
 
 import org.jetbrains.flcc.cli.ArgsParser
-import org.jetbrains.flcc.cli.CliOptions
+import org.jetbrains.flcc.cli.Options
 import org.jetbrains.flcc.lang.MethodFilter
 
 fun main(args: Array<String>) {
@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
     options.output.path.toFile().writeText(interfaceCode)
 }
 
-private fun CliOptions.MethodsRequirements.toFilter(): MethodFilter {
+private fun Options.MethodsRequirements.toFilter(): MethodFilter {
     val whitelist = whitelist?.toSet()
     val blacklist = blacklist?.toSet()
     return { method ->
