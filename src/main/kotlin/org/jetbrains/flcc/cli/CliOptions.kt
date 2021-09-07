@@ -26,8 +26,8 @@ data class CliOptions(
     class Builder {
         private val className: StringFlag = StringFlag()
         private val interfaceName: StringFlag = StringFlag()
-        private val methodsWhitelist: ListFlag = ListFlag()
-        private val methodsBlacklist: ListFlag = ListFlag()
+        private val whitelist: ListFlag = ListFlag()
+        private val blacklist: ListFlag = ListFlag()
         private val accessModifier: StringFlag = StringFlag()
         private val inputPath: PathFlag = PathFlag()
         private val outputPath: PathFlag = PathFlag()
@@ -67,8 +67,8 @@ data class CliOptions(
                     outputLanguage
                 ),
                 MethodsRequirements(
-                    methodsWhitelist.value,
-                    methodsBlacklist.value,
+                    whitelist.value,
+                    blacklist.value,
                     accessModifier
                 )
             )
@@ -102,7 +102,7 @@ data class CliOptions(
             private fun String.toListOfString(): List<String> {
                 check(first() == '[') { "Incorrect format for list." }
                 check(last() == ']') { "Incorrect format for list." }
-                return substring(1, length - 1).split(',').onEach { it.trim() }
+                return substring(1, length - 1).split(',').map { it.trim() }
             }
 
             private fun defaultLanguage(): Language = JavaLanguage

@@ -16,9 +16,8 @@ fun main(args: Array<String>) {
 private fun CliOptions.MethodsRequirements.toFilter(): MethodFilter {
     val whitelist = whitelist?.toSet()
     val blacklist = blacklist?.toSet()
-    val accessModifier = accessModifier
     return { method ->
-        method.accessModifier.name == accessModifier &&
+        method.accessModifier.name.equals(accessModifier, ignoreCase = true) &&
                 (whitelist == null || method.name in whitelist) &&
                 (blacklist == null || method.name !in blacklist)
     }
