@@ -6,10 +6,9 @@ sealed class Language {
     abstract val name: String
     abstract val extension: String
 
-    open fun extractMethods(
+    open fun extractAllMethods(
         code: String,
-        className: String,
-        methodFilter: MethodFilter
+        className: String
     ): List<MethodSignature> = throw UnsupportedOperationException("Language '$name' cannot extract methods.")
 
     open fun constructInterface(

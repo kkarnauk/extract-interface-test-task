@@ -17,11 +17,7 @@ object JavaLanguage : Language() {
     override val name: String = "Java"
     override val extension: String = "java"
 
-    override fun extractMethods(
-        code: String,
-        className: String,
-        methodFilter: (MethodSignature) -> Boolean
-    ): List<MethodSignature> {
+    override fun extractAllMethods(code: String, className: String): List<MethodSignature> {
         val ast = parser.parse(code).result.unwrap()
         requireNotNull(ast) { "Cannot parse given Java file." }
 
@@ -29,7 +25,7 @@ object JavaLanguage : Language() {
         requireNotNull(type) { "Cannot find given class name." }
         require(type is ClassOrInterfaceDeclaration && !type.isInterface) { "Given object must be a class." }
 
-        return type.methods.map { it.toMethodSignature() }.filter(methodFilter)
+        return type.methods.map { it.toMethodSignature() }
     }
 
     private fun findType(roots: List<TypeDeclaration<*>>, typeName: String): TypeDeclaration<*>? {
