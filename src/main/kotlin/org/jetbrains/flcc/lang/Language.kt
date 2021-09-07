@@ -25,7 +25,7 @@ sealed class Language {
         fun forName(name: String): Language? {
             return Language::class.sealedSubclasses
                 .mapNotNull { it.objectInstance }
-                .firstOrNull { it.name == name }
+                .firstOrNull { it.name.equals(name, ignoreCase = true) }
         }
     }
 }
