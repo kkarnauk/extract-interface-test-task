@@ -100,8 +100,8 @@ data class Options(
 
         companion object {
             private fun String.toListOfString(): List<String> {
-                check(first() == '[') { "Incorrect format for list." }
-                check(last() == ']') { "Incorrect format for list." }
+                require(first() == '[') { "Incorrect format for list." }
+                require(last() == ']') { "Incorrect format for list." }
                 return substring(1, length - 1).split(',').map { it.trim() }
             }
 
