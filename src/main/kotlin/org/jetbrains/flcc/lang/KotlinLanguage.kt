@@ -4,10 +4,7 @@ import kotlinx.ast.common.AstResult
 import kotlinx.ast.common.AstSource
 import kotlinx.ast.common.ast.Ast
 import kotlinx.ast.common.ast.AstNode
-import kotlinx.ast.common.klass.KlassDeclaration
-import kotlinx.ast.common.klass.KlassIdentifier
-import kotlinx.ast.common.klass.KlassModifier
-import kotlinx.ast.common.klass.identifierNameOrNull
+import kotlinx.ast.common.klass.*
 import kotlinx.ast.common.map.TreeMapResultFactory
 import kotlinx.ast.grammar.kotlin.common.summary
 import kotlinx.ast.grammar.kotlin.target.antlr.kotlin.KotlinGrammarAntlrKotlinParser
@@ -19,7 +16,8 @@ object KotlinLanguage : Language() {
 
     override fun extractClassDescription(code: String, className: String): ClassOrInterfaceLC {
         val source = AstSource.String("", code)
-        val methods = mutableListOf<KlassDeclaration>()
+        val methods = mutableListOf<MethodLC>()
+        val typeParameters = mutableListOf<TypeParameterLC>()
         KotlinGrammarAntlrKotlinParser.parseKotlinFile(source).summaryOnSuccess { topLevelDecls ->
             val klass = topLevelDecls.filterIsInstance<KlassDeclaration>().firstOrNull {
                 it.isClass && it.identifier?.rawName == className
@@ -28,13 +26,12 @@ object KotlinLanguage : Language() {
 
             val body = klass.childrenOrEmpty.firstOrNull { it.isClassBody }
             val decls = body?.childrenOrEmpty?.filterIsInstance<KlassDeclaration>()
-            decls?.filter { it.isFun }?.forEach(methods::add)
+            decls?.filter { it.isFun }?.mapNotNull { it.toCommonMethod() }?.forEach(methods::add)
+
+            klass.typeParameters.forEach { typeParameters.add(it.toCommonTypeParameter()) }
         }
 
-        return ClassOrInterfaceLC(
-            className,
-            methods.mapNotNull { it.toCommonMethod() }
-        )
+        return ClassOrInterfaceLC(className, methods, typeParameters)
     }
 
     private val Ast.childrenOrEmpty get(): List<Ast> = (this as? AstNode)?.children ?: emptyList()
@@ -53,12 +50,23 @@ object KotlinLanguage : Language() {
             }
         }
         return toName()?.let { name ->
-            MethodLC(name, type.toCommonType(), parameters, toCommonAccessModifier())
+            MethodLC(
+                name,
+                type.toCommonType(),
+                parameters,
+                typeParameters.map { it.toCommonTypeParameter() },
+                toCommonAccessModifier()
+            )
         }
     }
 
-    private fun List<KlassIdentifier>?.toCommonType(): TypeLC =
-        TypeLC(this?.identifierNameOrNull() ?: "Unit")
+    private fun List<KlassIdentifier>.toCommonType(): TypeLC =
+        TypeLC(this.identifierNameOrNull() ?: "Unit")
+
+    private fun KlassIdentifier.toCommonType(): TypeLC = TypeLC(identifier)
+
+    private fun KlassTypeParameter.toCommonTypeParameter(): TypeParameterLC =
+        TypeParameterLC(generic.rawName, base.map { it.toCommonType() })
 
     private fun KlassDeclaration.toName(): String? = identifier?.rawName
 

@@ -5,7 +5,8 @@ package org.jetbrains.flcc.lang
  */
 data class ClassOrInterfaceLC(
     val name: String,
-    val methods: List<MethodLC>
+    val methods: List<MethodLC>,
+    val typeParameters: List<TypeParameterLC>
 )
 
 /**
@@ -15,6 +16,7 @@ data class MethodLC(
     val name: String,
     val returnType: TypeLC,
     val parameters: List<ParameterLC>,
+    val typeParameters: List<TypeParameterLC>,
     val accessModifier: AccessModifierLC
 )
 
@@ -35,3 +37,11 @@ value class AccessModifierLC(val name: String)
  */
 @JvmInline
 value class TypeLC(val name: String)
+
+/**
+ * **L**anguage **C**ommon description for type parameters of classes and methods.
+ */
+data class TypeParameterLC(
+    val name: String,
+    val bound: List<TypeLC>
+)

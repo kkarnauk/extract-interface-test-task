@@ -10,7 +10,11 @@ fun main(args: Array<String>) {
     val classCode = options.input.path.toFile().apply { require(isFile) { "'inputPath' must be a file" } }.readText()
     val classDescription = options.input.language.extractClassDescription(classCode, options.input.name)
     val interfaceMethods = filterMethods(classDescription.methods, options.requirements)
-    val interfaceDescription = ClassOrInterfaceLC(options.output.name, interfaceMethods)
+    val interfaceDescription = ClassOrInterfaceLC(
+        options.output.name,
+        interfaceMethods,
+        classDescription.typeParameters
+    )
     val interfaceCode = options.output.language.constructInterfaceCode(interfaceDescription)
     options.output.path.toFile().writeText(interfaceCode)
 }

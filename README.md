@@ -36,9 +36,13 @@ It's an example of program arguments in IntelliJ-IDEA for the `Main`:
 -inputPath test/Repository.kt -accessModifier private -inputLanguage kotlin -outputLanguage java -whitelist="[get, remove]"
 ```
 
+### Notes!
+
+* The [library](https://github.com/kotlinx/ast) chosen for the Kotlin language does NOT support 
+  `where`-expression (with type bounds), so in this project **multiple type bounds** are not supported for Kotlin.
+
 ### TODO
 
 * Add tests
 * Constructing a Kotlin interface
-* Support generics
 * Come up with types that exist in Java and don't in Kotlin, and vice versa (for example, `int` and `Int`)
