@@ -17,7 +17,7 @@ object JavaLanguage : Language() {
     override val name: String = "Java"
     override val extension: String = "java"
 
-    override fun extractAllMethods(code: String, className: String): List<MethodSignature> {
+    override fun extractAllMethods(code: String, className: String): List<MethodLC> {
         val ast = parser.parse(code).result.unwrap()
         requireNotNull(ast) { "Cannot parse given Java file." }
 
@@ -25,7 +25,7 @@ object JavaLanguage : Language() {
         requireNotNull(type) { "Cannot find given class name." }
         require(type is ClassOrInterfaceDeclaration && !type.isInterface) { "Given object must be a class." }
 
-        return type.methods.map { it.toMethodSignature() }
+        return type.methods.map { it.toCommonMethod() }
     }
 
     private fun findType(roots: List<TypeDeclaration<*>>, typeName: String): TypeDeclaration<*>? {
@@ -43,7 +43,7 @@ object JavaLanguage : Language() {
 
     override fun constructInterface(
         interfaceName: String,
-        methods: List<MethodSignature>
+        methods: List<MethodLC>
     ): String = ClassOrInterfaceDeclaration().apply {
         isInterface = true
         isPublic = true
@@ -54,30 +54,29 @@ object JavaLanguage : Language() {
 
     private fun <T> Optional<T>.unwrap(): T? = orElse(null)
 
-    private fun Type.toCommonType(): MethodSignature.Type = MethodSignature.Type(asString())
+    private fun Type.toCommonType(): TypeLC = TypeLC(asString())
 
-    private fun MethodSignature.Type.toType(): Type =
+    private fun TypeLC.toType(): Type =
         checkNotNull(parser.parseType(name).result.unwrap())
 
-    private fun AccessSpecifier.toAccessModifier(): MethodSignature.AccessModifier =
-        MethodSignature.AccessModifier(name)
+    private fun AccessSpecifier.toAccessModifier(): AccessModifierLC = AccessModifierLC(name)
 
-    private fun Parameter.toCommonParameter(): MethodSignature.Parameter =
-        MethodSignature.Parameter(nameAsString, type.toCommonType())
+    private fun Parameter.toCommonParameter(): ParameterLC =
+        ParameterLC(nameAsString, type.toCommonType())
 
-    private fun MethodSignature.Parameter.toParameter(): Parameter = Parameter().also {
+    private fun ParameterLC.toParameter(): Parameter = Parameter().also {
         it.name = SimpleName(name)
         it.type = type.toType()
     }
 
-    private fun MethodDeclaration.toMethodSignature(): MethodSignature = MethodSignature(
+    private fun MethodDeclaration.toCommonMethod(): MethodLC = MethodLC(
         nameAsString,
         type.toCommonType(),
         parameters.map { it.toCommonParameter() },
-        accessSpecifier.toAccessModifier(),
+        accessSpecifier.toAccessModifier()
     )
 
-    private fun MethodSignature.toInterfaceMethodDeclaration(): MethodDeclaration = MethodDeclaration().also {
+    private fun MethodLC.toInterfaceMethodDeclaration(): MethodDeclaration = MethodDeclaration().also {
         it.name = SimpleName(name)
         it.type = checkNotNull(parser.parseType(returnType.name).result.unwrap())
         it.parameters = NodeList(parameters.map { param -> param.toParameter() })

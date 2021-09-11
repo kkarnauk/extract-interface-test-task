@@ -2,7 +2,7 @@ package org.jetbrains.flcc
 
 import org.jetbrains.flcc.cli.ArgsParser
 import org.jetbrains.flcc.cli.Options
-import org.jetbrains.flcc.lang.MethodSignature
+import org.jetbrains.flcc.lang.MethodLC
 
 fun main(args: Array<String>) {
     val options = ArgsParser.parse(args.toList())
@@ -14,9 +14,9 @@ fun main(args: Array<String>) {
 }
 
 private fun filterMethods(
-    methods: List<MethodSignature>,
+    methods: List<MethodLC>,
     requirements: Options.MethodsRequirements
-): List<MethodSignature> {
+): List<MethodLC> {
     val whitelist = requirements.whitelist?.toSet()
     val blacklist = requirements.blacklist?.toSet()
     val accessModifier = requirements.accessModifier

@@ -9,11 +9,11 @@ sealed class Language {
     open fun extractAllMethods(
         code: String,
         className: String
-    ): List<MethodSignature> = throw UnsupportedOperationException("Language '$name' cannot extract methods.")
+    ): List<MethodLC> = throw UnsupportedOperationException("Language '$name' cannot extract methods.")
 
     open fun constructInterface(
         interfaceName: String,
-        methods: List<MethodSignature>
+        methods: List<MethodLC>
     ): String = throw UnsupportedOperationException("Language '$name' cannot construct interfaces.")
 
     open fun primaryClassNameForFile(file: File): String = file.nameWithoutExtension

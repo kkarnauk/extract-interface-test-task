@@ -17,7 +17,7 @@ object KotlinLanguage : Language() {
     override val name get(): String = "Kotlin"
     override val extension get(): String = "kt"
 
-    override fun extractAllMethods(code: String, className: String): List<MethodSignature> {
+    override fun extractAllMethods(code: String, className: String): List<MethodLC> {
         val source = AstSource.String("", code)
         val methods = mutableListOf<KlassDeclaration>()
         KotlinGrammarAntlrKotlinParser.parseKotlinFile(source).summaryOnSuccess { topLevelDecls ->
@@ -31,7 +31,7 @@ object KotlinLanguage : Language() {
             decls?.filter { it.isFun }?.forEach(methods::add)
         }
 
-        return methods.mapNotNull { it.toMethodSignature() }
+        return methods.mapNotNull { it.toCommonMethod() }
     }
 
     private val Ast.childrenOrEmpty get(): List<Ast> = (this as? AstNode)?.children ?: emptyList()
@@ -42,25 +42,25 @@ object KotlinLanguage : Language() {
         throw IllegalArgumentException("Cannot parse Kotlin file:\n$it")
     }
 
-    private fun KlassDeclaration.toMethodSignature(): MethodSignature? {
+    private fun KlassDeclaration.toCommonMethod(): MethodLC? {
         check(isFun)
         val parameters = parameter.mapNotNull { param ->
             param.toName()?.let { name ->
-                MethodSignature.Parameter(name, param.type.toCommonType())
+                ParameterLC(name, param.type.toCommonType())
             }
         }
         return toName()?.let { name ->
-            MethodSignature(name, type.toCommonType(), parameters, toCommonAccessModifier())
+            MethodLC(name, type.toCommonType(), parameters, toCommonAccessModifier())
         }
     }
 
-    private fun List<KlassIdentifier>?.toCommonType(): MethodSignature.Type =
-        MethodSignature.Type(this?.identifierNameOrNull() ?: "Unit")
+    private fun List<KlassIdentifier>?.toCommonType(): TypeLC =
+        TypeLC(this?.identifierNameOrNull() ?: "Unit")
 
     private fun KlassDeclaration.toName(): String? = identifier?.rawName
 
-    private fun KlassDeclaration.toCommonAccessModifier(): MethodSignature.AccessModifier =
-        MethodSignature.AccessModifier(modifiers.firstOrNull { it.isVisibility }?.modifier ?: "public")
+    private fun KlassDeclaration.toCommonAccessModifier(): AccessModifierLC =
+        AccessModifierLC(modifiers.firstOrNull { it.isVisibility }?.modifier ?: "public")
 
     private val KlassDeclaration.isClass get(): Boolean = keyword == "class"
     private val KlassDeclaration.isFun get(): Boolean = keyword == "fun"
