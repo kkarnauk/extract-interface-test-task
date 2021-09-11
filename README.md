@@ -41,3 +41,4 @@ It's an example of program arguments in IntelliJ-IDEA for the `Main`:
 * Add tests
 * Constructing a Kotlin interface
 * Support generics
+* Come up with types that exist in Java and don't in Kotlin, and vice versa (for example, `int` and `Int`)
