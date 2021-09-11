@@ -7,6 +7,8 @@ import kotlinx.ast.common.ast.AstNode
 import kotlinx.ast.common.klass.KlassDeclaration
 import kotlinx.ast.common.klass.KlassIdentifier
 import kotlinx.ast.common.klass.KlassModifier
+import kotlinx.ast.common.klass.identifierNameOrNull
+import kotlinx.ast.common.map.TreeMapResultFactory
 import kotlinx.ast.grammar.kotlin.common.summary
 import kotlinx.ast.grammar.kotlin.target.antlr.kotlin.KotlinGrammarAntlrKotlinParser
 
@@ -16,7 +18,7 @@ object KotlinLanguage : Language() {
     override val extension get(): String = "kt"
 
     override fun extractAllMethods(code: String, className: String): List<MethodSignature> {
-        val source = AstSource.String(code)
+        val source = AstSource.String("", code)
         val methods = mutableListOf<KlassDeclaration>()
         KotlinGrammarAntlrKotlinParser.parseKotlinFile(source).summaryOnSuccess { topLevelDecls ->
             val klass = topLevelDecls.filterIsInstance<KlassDeclaration>().firstOrNull {
@@ -34,10 +36,11 @@ object KotlinLanguage : Language() {
 
     private val Ast.childrenOrEmpty get(): List<Ast> = (this as? AstNode)?.children ?: emptyList()
 
-    private fun Ast.summaryOnSuccess(callback: (List<Ast>) -> Unit): AstResult<List<Ast>> =
-        summary(attachRawAst = false).onSuccess(callback).onFailure {
-            throw IllegalArgumentException("Cannot parse Kotlin file:\n$it")
-        }
+    private fun Ast.summaryOnSuccess(
+        callback: TreeMapResultFactory<Unit>.(List<Ast>) -> Unit
+    ): AstResult<Unit, List<Ast>> = summary(attachRawAst = false).onSuccess(callback).onFailure {
+        throw IllegalArgumentException("Cannot parse Kotlin file:\n$it")
+    }
 
     private fun KlassDeclaration.toMethodSignature(): MethodSignature? {
         check(isFun)
@@ -51,8 +54,8 @@ object KotlinLanguage : Language() {
         }
     }
 
-    private fun KlassIdentifier?.toCommonType(): MethodSignature.Type =
-        MethodSignature.Type(this?.rawName ?: "Unit")
+    private fun List<KlassIdentifier>?.toCommonType(): MethodSignature.Type =
+        MethodSignature.Type(this?.identifierNameOrNull() ?: "Unit")
 
     private fun KlassDeclaration.toName(): String? = identifier?.rawName
 

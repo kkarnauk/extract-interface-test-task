@@ -7,13 +7,13 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    maven { url "https://jitpack.io" }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
     implementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.21'
 
     implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.23.0'
-    implementation 'com.github.kotlinx.ast:grammar-kotlin-parser-antlr-kotlin-jvm:c35b50fa44'
+    implementation 'com.github.kotlinx.ast:grammar-kotlin-parser-antlr-kotlin-jvm:bf1da05656'
 }
