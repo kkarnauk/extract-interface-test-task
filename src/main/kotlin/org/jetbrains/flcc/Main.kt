@@ -5,8 +5,9 @@ import org.jetbrains.flcc.cli.Options
 import org.jetbrains.flcc.lang.ClassOrInterfaceLC
 import org.jetbrains.flcc.lang.MethodLC
 
-fun main(args: Array<String>) {
-    val options = ArgsParser.parse(args.toList())
+fun main(args: Array<String>) = extractInfoAndConstructInterface(ArgsParser.parse(args.toList()))
+
+internal fun extractInfoAndConstructInterface(options: Options) {
     val classCode = options.input.path.toFile().apply { require(isFile) { "'inputPath' must be a file" } }.readText()
     val classDescription = options.input.language.extractClassDescription(classCode, options.input.name)
     val interfaceMethods = filterMethods(classDescription.methods, options.requirements)
