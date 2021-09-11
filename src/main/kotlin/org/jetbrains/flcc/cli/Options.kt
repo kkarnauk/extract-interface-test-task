@@ -50,7 +50,7 @@ data class Options(
         fun build(): Options {
             val inputLanguage = inputLanguage.value ?: defaultLanguage()
             val outputLanguage = outputLanguage.value ?: defaultLanguage()
-            val inputPath = inputPath.value ?: throw IllegalStateException("Property 'inputPath' must be initialized.")
+            val inputPath = requireNotNull(inputPath.value) { ("Property 'inputPath' must be initialized.") }
             val className = className.value ?: defaultClassName(inputPath, inputLanguage)
             val interfaceName = interfaceName.value ?: defaultInterfaceName(className)
             val outputPath = outputPath.value ?: defaultOutputPath(inputPath, interfaceName, outputLanguage)
