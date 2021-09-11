@@ -24,21 +24,21 @@ data class Options(
     )
 
     class Builder {
-        private val className: StringFlag = StringFlag()
-        private val interfaceName: StringFlag = StringFlag()
-        private val whitelist: ListFlag = ListFlag()
-        private val blacklist: ListFlag = ListFlag()
-        private val accessModifier: StringFlag = StringFlag()
-        private val inputPath: PathFlag = PathFlag()
-        private val outputPath: PathFlag = PathFlag()
-        private val inputLanguage: LanguageFlag = LanguageFlag()
-        private val outputLanguage: LanguageFlag = LanguageFlag()
+        val className: StringFlag = StringFlag()
+        val interfaceName: StringFlag = StringFlag()
+        val whitelist: ListFlag = ListFlag()
+        val blacklist: ListFlag = ListFlag()
+        val accessModifier: StringFlag = StringFlag()
+        val inputPath: PathFlag = PathFlag()
+        val outputPath: PathFlag = PathFlag()
+        val inputLanguage: LanguageFlag = LanguageFlag()
+        val outputLanguage: LanguageFlag = LanguageFlag()
 
         fun set(name: String, value: String): Builder {
             for (prop in Builder::class.memberProperties) {
                 if (prop.name.equals(name, ignoreCase = true)) {
                     prop.isAccessible = true
-                    val flag = requireNotNull(prop.get(this) as? Flag<*>)
+                    val flag = requireNotNull(prop.get(this) as? CommandFlag<*>)
                     flag.setValue(value)
                     return this
                 }
@@ -74,37 +74,7 @@ data class Options(
             )
         }
 
-        private sealed class Flag<T>(var value: T) {
-            abstract fun setValue(stringValue: String)
-        }
-
-        private class StringFlag : Flag<String?>(null) {
-            override fun setValue(stringValue: String) = run { value = stringValue }
-        }
-
-        private class ListFlag : Flag<List<String>?>(null) {
-            override fun setValue(stringValue: String) = run { value = stringValue.toListOfString() }
-        }
-
-        private class PathFlag : Flag<Path?>(null) {
-            override fun setValue(stringValue: String) = run { value = Path.of(stringValue).toAbsolutePath() }
-        }
-
-        private class LanguageFlag : Flag<Language?>(null) {
-            override fun setValue(stringValue: String) {
-                value = requireNotNull(Language.forName(stringValue)) {
-                    "Cannot find a language by name '$stringValue'."
-                }
-            }
-        }
-
         companion object {
-            private fun String.toListOfString(): List<String> {
-                require(first() == '[') { "Incorrect format for list." }
-                require(last() == ']') { "Incorrect format for list." }
-                return substring(1, length - 1).split(',').map { it.trim() }
-            }
-
             private fun defaultLanguage(): Language = JavaLanguage
 
             private fun defaultClassName(inputPath: Path, inputLanguage: Language): String =
