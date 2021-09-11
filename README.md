@@ -33,7 +33,7 @@ You must pass options as pairs of a flag and its value.
 
 It's an example of program arguments in IntelliJ-IDEA for the `Main`:
 ```
--inputPath test/Repository.kt -accessModifier private -inputLanguage kotlin -outputLanguage java -whitelist="[get, remove]"
+-inputPath test/Repository.kt -accessModifier private -inputLanguage kotlin -outputLanguage java -whitelist "[get, remove]"
 ```
 
 ### Notes!
