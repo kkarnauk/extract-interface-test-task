@@ -6,14 +6,13 @@ sealed class Language {
     abstract val name: String
     abstract val extension: String
 
-    open fun extractAllMethods(
+    open fun extractClassDescription(
         code: String,
         className: String
-    ): List<MethodLC> = throw UnsupportedOperationException("Language '$name' cannot extract methods.")
+    ): ClassOrInterfaceLC = throw UnsupportedOperationException("Language '$name' cannot extract methods.")
 
-    open fun constructInterface(
-        interfaceName: String,
-        methods: List<MethodLC>
+    open fun constructInterfaceCode(
+        interfaceDescription: ClassOrInterfaceLC
     ): String = throw UnsupportedOperationException("Language '$name' cannot construct interfaces.")
 
     open fun primaryClassNameForFile(file: File): String = file.nameWithoutExtension

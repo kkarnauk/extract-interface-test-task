@@ -17,7 +17,7 @@ object KotlinLanguage : Language() {
     override val name get(): String = "Kotlin"
     override val extension get(): String = "kt"
 
-    override fun extractAllMethods(code: String, className: String): List<MethodLC> {
+    override fun extractClassDescription(code: String, className: String): ClassOrInterfaceLC {
         val source = AstSource.String("", code)
         val methods = mutableListOf<KlassDeclaration>()
         KotlinGrammarAntlrKotlinParser.parseKotlinFile(source).summaryOnSuccess { topLevelDecls ->
@@ -31,7 +31,10 @@ object KotlinLanguage : Language() {
             decls?.filter { it.isFun }?.forEach(methods::add)
         }
 
-        return methods.mapNotNull { it.toCommonMethod() }
+        return ClassOrInterfaceLC(
+            className,
+            methods.mapNotNull { it.toCommonMethod() }
+        )
     }
 
     private val Ast.childrenOrEmpty get(): List<Ast> = (this as? AstNode)?.children ?: emptyList()

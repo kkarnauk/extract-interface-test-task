@@ -1,6 +1,14 @@
 package org.jetbrains.flcc.lang
 
 /**
+ * **L**anguage **C**ommon description for classes and interfaces
+ */
+data class ClassOrInterfaceLC(
+    val name: String,
+    val methods: List<MethodLC>
+)
+
+/**
  * **L**anguage **C**ommon description for methods.
  */
 data class MethodLC(
