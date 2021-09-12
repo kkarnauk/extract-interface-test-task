@@ -34,6 +34,13 @@ object KotlinLanguage : Language() {
         return ClassOrInterfaceLC(className, methods, typeParameters)
     }
 
+    override fun convertTypeToOtherLanguage(type: TypeLC, otherLanguage: Language) = when (otherLanguage) {
+        KotlinLanguage -> type
+        JavaLanguage -> {
+            TypeLC(type.name.filter { it != '?' }.replace('*', '?'))
+        }
+    }
+
     private val Ast.childrenOrEmpty get(): List<Ast> = (this as? AstNode)?.children ?: emptyList()
 
     private fun Ast.summaryOnSuccess(

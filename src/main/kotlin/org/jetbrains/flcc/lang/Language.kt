@@ -34,6 +34,16 @@ sealed class Language {
     ): String = throw UnsupportedOperationException("Language '$name' cannot construct interfaces.")
 
     /**
+     * Required to make types from different languages compatible.
+     *
+     * For example, Java doesn't support Kotlin's `?` in types.
+     *
+     * The reason why it's `'to'` and not `'from'` is
+     * because you'll probably need some private utilities methods for current language.
+     */
+    open fun convertTypeToOtherLanguage(type: TypeLC, otherLanguage: Language): TypeLC = type
+
+    /**
      * Required if a user didn't provide `className` in a configuration.
      * @return primary class name from [file] of this language.
      */

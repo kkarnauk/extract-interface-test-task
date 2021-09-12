@@ -8,8 +8,7 @@ import com.github.javaparser.ast.body.MethodDeclaration
 import com.github.javaparser.ast.body.Parameter
 import com.github.javaparser.ast.body.TypeDeclaration
 import com.github.javaparser.ast.expr.SimpleName
-import com.github.javaparser.ast.type.Type
-import com.github.javaparser.ast.type.TypeParameter
+import com.github.javaparser.ast.type.*
 import java.util.*
 
 object JavaLanguage : Language() {
@@ -56,12 +55,29 @@ object JavaLanguage : Language() {
         typeParameters = NodeList(interfaceDescription.typeParameters.map { it.toTypeParameter() })
     }.toString()
 
+    override fun convertTypeToOtherLanguage(type: TypeLC, otherLanguage: Language): TypeLC = when (otherLanguage) {
+        JavaLanguage -> type
+        KotlinLanguage -> {
+            val newType = when (val jType = type.toType()) {
+                is PrimitiveType -> TypeLC(type.name.replaceFirstChar { it.uppercase() })
+                is ArrayType -> {
+                    val component = convertTypeToOtherLanguage(jType.componentType.toCommonType(), otherLanguage)
+                    TypeLC("Array<${component.name}>")
+                }
+                is VoidType -> TypeLC("Unit")
+                else -> type
+            }
+            TypeLC(newType.name.replace('?', '*'))
+        }
+    }
 
     private fun <T> Optional<T>.unwrap(): T? = orElse(null)
 
     private fun Type.toCommonType(): TypeLC = TypeLC(asString())
 
-    private fun TypeLC.toType(): Type = checkNotNull(parser.parseType(name).result.unwrap())
+    private fun TypeLC.toType(): Type = checkNotNull(parser.parseType(name).result.unwrap()) {
+        "Unsupported type in Java: '$name'"
+    }
 
     private fun TypeParameter.toCommonTypeParameter(): TypeParameterLC = TypeParameterLC(
         nameAsString,
@@ -92,7 +108,7 @@ object JavaLanguage : Language() {
 
     private fun MethodLC.toInterfaceMethodDeclaration(): MethodDeclaration = MethodDeclaration().also {
         it.name = SimpleName(name)
-        it.type = checkNotNull(parser.parseType(returnType.name).result.unwrap())
+        it.type = returnType.toType()
         it.parameters = NodeList(parameters.map { param -> param.toParameter() })
         it.typeParameters = NodeList(typeParameters.map { typeParam -> typeParam.toTypeParameter() })
         it.removeBody()

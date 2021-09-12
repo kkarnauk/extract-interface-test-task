@@ -2,18 +2,19 @@ package org.jetbrains.flcc
 
 import org.jetbrains.flcc.cli.ArgsParser
 import org.jetbrains.flcc.cli.Options
-import org.jetbrains.flcc.lang.ClassOrInterfaceLC
-import org.jetbrains.flcc.lang.MethodLC
+import org.jetbrains.flcc.lang.*
 
 fun main(args: Array<String>) = extractInfoAndConstructInterface(ArgsParser.parse(args.toList()))
 
 internal fun extractInfoAndConstructInterface(options: Options) {
     val classCode = options.input.path.toFile().apply { require(isFile) { "'inputPath' must be a file" } }.readText()
     val classDescription = options.input.language.extractClassDescription(classCode, options.input.name)
-    val interfaceMethods = filterMethods(classDescription.methods, options.requirements)
+        .toOtherLanguage(options.input.language, options.output.language)
+
+    val filteredMethods = filterMethods(classDescription.methods, options.requirements)
     val interfaceDescription = ClassOrInterfaceLC(
         options.output.name,
-        interfaceMethods,
+        filteredMethods,
         classDescription.typeParameters
     )
     val interfaceCode = options.output.language.constructInterfaceCode(interfaceDescription)
@@ -32,4 +33,26 @@ private fun filterMethods(
                 (whitelist == null || method.name in whitelist) &&
                 (blacklist == null || method.name !in blacklist)
     }
+}
+
+private fun ClassOrInterfaceLC.toOtherLanguage(input: Language, output: Language): ClassOrInterfaceLC {
+    fun TypeLC.convert(): TypeLC = input.convertTypeToOtherLanguage(this, output)
+
+    fun ParameterLC.convert(): ParameterLC = ParameterLC(name, type.convert())
+
+    fun TypeParameterLC.convert(): TypeParameterLC = TypeParameterLC(name, bound.map { it.convert() })
+
+    fun MethodLC.convert(): MethodLC = MethodLC(
+        name,
+        returnType.convert(),
+        parameters.map { it.convert() },
+        typeParameters.map { it.convert() },
+        accessModifier
+    )
+
+    return ClassOrInterfaceLC(
+        name,
+        methods.map { it.convert() },
+        typeParameters.map { it.convert() }
+    )
 }
