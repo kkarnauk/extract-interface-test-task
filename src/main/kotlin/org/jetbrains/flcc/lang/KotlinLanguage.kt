@@ -70,10 +70,10 @@ object KotlinLanguage : Language() {
     private fun List<KlassIdentifier>.toCommonType(): TypeLC =
         TypeLC(this.identifierNameOrNull() ?: "Unit")
 
-    private fun KlassIdentifier.toCommonType(): TypeLC = TypeLC(identifier)
+    private fun KlassIdentifier.toCommonType(): TypeLC = TypeLC(rawName)
 
     private fun KlassTypeParameter.toCommonTypeParameter(): TypeParameterLC =
-        TypeParameterLC(generic.rawName, base.map { it.toCommonType() })
+        TypeParameterLC(generic.identifier, base.map { it.toCommonType() })
 
     private fun KlassDeclaration.toName(): String? = identifier?.rawName
 
