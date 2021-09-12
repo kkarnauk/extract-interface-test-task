@@ -43,5 +43,4 @@ It's an example of program arguments in IntelliJ-IDEA for the `Main`:
 
 ### TODO
 
-* Add tests
 * Constructing a Kotlin interface

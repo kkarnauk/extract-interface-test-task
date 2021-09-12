@@ -25,6 +25,13 @@ abstract class LanguageTest {
         assertSame(language, Language.forName(language.name))
     }
 
+    protected open fun defaultOptions(inputFilename: String, outputFilename: String) = Options.Builder().apply {
+        inputPath.value = inputDir.resolve(inputFilename)
+        outputPath.value = tempDir.resolve(outputFilename)
+        className.value = inputFilename.substringBeforeLast(".")
+        interfaceName.value = outputFilename.substringBeforeLast(".")
+    }
+
     protected fun doTest(
         inputFilename: String,
         outputFilename: String,
@@ -45,12 +52,5 @@ abstract class LanguageTest {
         extractInfoAndConstructInterface(options)
         val actualCode = options.output.path.readText()
         assertEquals(expectedCode, actualCode)
-    }
-
-    private fun defaultOptions(inputFilename: String, outputFilename: String) = Options.Builder().apply {
-        inputPath.value = inputDir.resolve(inputFilename)
-        outputPath.value = tempDir.resolve(outputFilename)
-        className.value = inputFilename.substringBeforeLast(".")
-        interfaceName.value = outputFilename.substringBeforeLast(".")
     }
 }
