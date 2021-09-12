@@ -3,7 +3,15 @@ package org.jetbrains.flcc.cli
 import org.jetbrains.flcc.lang.Language
 import java.nio.file.Path
 
+/**
+ * Represents a command line flag.
+ * @param value current value of this flag.
+ * @param T type of flag value
+ */
 sealed class CommandFlag<T>(var value: T) {
+    /**
+     * Converts a string representation of a given flag value to a value of the type ans sets it.
+     */
     abstract fun setValue(stringValue: String)
 }
 

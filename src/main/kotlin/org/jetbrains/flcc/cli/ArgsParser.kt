@@ -1,6 +1,9 @@
 package org.jetbrains.flcc.cli
 
 object ArgsParser {
+    /**
+     * Parses command arguments in [Options].
+     */
     fun parse(args: List<String>): Options {
         val builder = Options.Builder()
         for (i in args.indices step 2) {
